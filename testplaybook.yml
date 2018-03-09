@@ -46,7 +46,7 @@
     lineinfile:
       path: /etc/ssh/sshd_config
       regexp: "^#*PermitRootLogin (yes|no)$"
-      line: "PermitRootLogin"
+      line: "PermitRootLogin no"
     notify: "Restart sshd"
 
   # Install packages
