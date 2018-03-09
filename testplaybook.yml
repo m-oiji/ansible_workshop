@@ -1,0 +1,70 @@
+- hosts: web
+  vars:
+    supported_os: "RedHat"
+    supported_version: "7"
+
+  tasks:
+  # Debug
+  - name: "Test"
+    debug:
+      msg: "OS:{{ ansible_distribution }} version:{{ ansible_distribution_major_version }}"
+
+  - name: If host OS is not RHEL7 exit
+    fail:
+      msg: "Target OS is not supported. OS:{{ ansible_distribution }} version:{{ ansible_distribution_major_version }}"
+    when: ansible_distribution != supported_os or ansible_distribution_major_version != supported_version
+
+  - name: Set SELinux Enforcing
+    selinux:
+      policy: targeted
+      state: enforcing
+
+  - name: "Get kernel version from Magic Valiables"
+    debug:
+      msg: "{{ ansible_kernel }}"
+
+  - name: "Get default IP4Address from Magic Valiables"
+    debug:
+      msg: "{{ ansible_default_ipv4.address }}"
+
+  - name: "Get NIC IP4Address from Magic Valiables"
+    debug:
+      msg: "{{ ansible_eth0.ipv4.address }}"
+
+  - name: "Get NIC IP4Address from Magic Valiables2"
+    debug:
+      msg: "{{ hostvars[inventory_hostname].ansible_eth0.ipv4.address }}"
+
+  - name: "Create User"
+    user:
+      name: web-admin
+      group: wheel
+      shell: /bin/bash
+      createhome: false
+
+  - name: "Forbidden root login by ssh"
+    lineinfile:
+      path: /etc/ssh/sshd_config
+      regexp: "^#*PermitRootLogin (yes|no)$"
+      line: "PermitRootLogin"
+    notify: "Restart sshd"
+
+  # Install packages
+#  - name:
+  # Start services
+#  - name:
+  # Setting httpd
+#  - name:
+  # Copy shell script
+#  - name:
+  # Transport shell result file
+#  - name:
+  # Test connect 
+#  - name:
+
+  handlers:
+  - name: "Restart sshd"
+    service: 
+      name: sshd
+      state: restarted
+
